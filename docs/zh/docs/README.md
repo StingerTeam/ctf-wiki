@@ -1,10 +1,10 @@
----
-description: 本仓库 Fork 自 CTF Wiki，经过 Stinger Team 增删改后发布。
----
-
 # 简介
 
-[![Build Status](https://travis-ci.org/ctf-wiki/ctf-wiki.svg?branch=master)](https://travis-ci.org/ctf-wiki/ctf-wiki) [![Requirements Status](https://requires.io/github/ctf-wiki/ctf-wiki/requirements.svg?branch=master)](https://requires.io/github/ctf-wiki/ctf-wiki/requirements/?branch=master) [![Slack](https://img.shields.io/badge/slack-join%20chat-brightgreen.svg)](https://join.slack.com/t/ctf-wiki/shared\_invite/enQtNTkwNDg5NDUzNzAzLWExOTRhZTE0ZTMzYjVlNDk5OGI3ZDA1NmQyZjE4NWRlMGU3NjEwM2Y2ZTliMTg4Njg1MjliNWRhNTk2ZmY0NmI)
+本仓库 Fork 自 CTF Wiki，经过 Stinger Team 增删改后发布。
+
+{% embed url="https://answer.stinger.team" %}
+欢迎前往ZJUTCSA问答平台进行提问交流
+{% endembed %}
 
 欢迎来到 **CTF Wiki**。
 
