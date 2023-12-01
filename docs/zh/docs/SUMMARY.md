@@ -1,7 +1,6 @@
 # Table of contents
 
-* [讨论交流](README.md)
-* [简介](index.md)
+* [简介](README.md)
 * [如何使用 CTF Wiki](usage.md)
 * [Android 安全](android/readme.md)
   * [basic\_develop](android/basic\_develop/README.md)
