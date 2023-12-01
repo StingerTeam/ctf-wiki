@@ -4,7 +4,7 @@
 
 ElGamal算法的安全性是基于求解离散对数问题的困难性，于1984年提出，也是一种双钥密码体制，既可以用于加密又可用于数字签名。
 
-如果我们假设p是至少是160位的十进制素数，**并且p-1有大素因子**，此外g是 $Z_p^*$  的生成元，并且 $y \in Z_p^*$  。那么如何找到一个唯一的整数x($0\leq x \leq p-2$) ，满足$g^x \equiv y \bmod p$ 在算法上是困难的，这里将x记为$x=log_gy$ 。
+如果我们假设p是至少是160位的十进制素数，**并且p-1有大素因子**，此外g是 $Z\_p^_$ 的生成元，并且 $y \in Z\_p^_$ 。那么如何找到一个唯一的整数x($0\leq x \leq p-2$) ，满足$g^x \equiv y \bmod p$ 在算法上是困难的，这里将x记为$x=log\_gy$ 。
 
 ## 基本原理
 
@@ -14,19 +14,19 @@ ElGamal算法的安全性是基于求解离散对数问题的困难性，于1984
 
 基本步骤如下
 
-1. 选取一个足够大的素数p，以便于在$Z_p$ 上求解离散对数问题是困难的。
-2. 选取$Z_p^*$ 的生成元g。
+1. 选取一个足够大的素数p，以便于在$Z\_p$ 上求解离散对数问题是困难的。
+2. 选取$Z\_p^\*$ 的生成元g。
 3. 随机选取整数k,$0\leq k \leq p-2$ ，并计算$g^k \equiv y \bmod p$ 。
 
 其中私钥为{k}，公钥为{p,g,y} 。
 
 ### 加密
 
-A选取随机数$r \in Z_{p-1}$ ，对明文加密$E_k(m,r)=(y_1,y_2)$ 。其中$y_1 \equiv g^r \bmod p$ ，$y_2 \equiv my^r \bmod p$ 。
+A选取随机数$r \in Z\_{p-1}$ ，对明文加密$E\_k(m,r)=(y\_1,y\_2)$ 。其中$y\_1 \equiv g^r \bmod p$ ，$y\_2 \equiv my^r \bmod p$ 。
 
 ### 解密
 
-$D_k(y_1,y_2)=y_2(y_1^k)^{-1} \bmod p \equiv m(g^k)^r(g^{rk})^{-1} \equiv m \bmod p$ 。
+$D\_k(y\_1,y\_2)=y\_2(y\_1^k)^{-1} \bmod p \equiv m(g^k)^r(g^{rk})^{-1} \equiv m \bmod p$ 。
 
 ### 难点
 
@@ -75,18 +75,18 @@ def encrypt(pk, m, r = None):
 
 分析一下，这里我们在十轮循环中可以控制m和r，并且
 
-$c_1 \equiv g^r \bmod p$
+$c\_1 \equiv g^r \bmod p$
 
-$c_2 \equiv m * h^{r} \bmod p$
+$c\_2 \equiv m \* h^{r} \bmod p$
 
 如果我们设置
 
-1. r=1，m=1，那么我们就可以获得$c_1=g,c_2=h$ 。
-2. r=1，m=-1，那么我们就可以获得$c_1=g, c_2 = p-h$ 。进而我们就可以得到素数p。
+1. r=1，m=1，那么我们就可以获得$c\_1=g,c\_2=h$ 。
+2. r=1，m=-1，那么我们就可以获得$c\_1=g, c\_2 = p-h$ 。进而我们就可以得到素数p。
 
 我们得到素数p有什么用呢?p的位数在201位左右，很大啊。
 
-但是啊，它生成素数p之后，没有进行检查啊。我们在之前说过p-1必须有大素因子，如果有小的素因子的话，那我们就可以攻击了。其攻击主要是使用到了baby step-giant step 与 Pohlig-Hellman algorithm 算法，有兴趣的可以看看，这里sage本身自带的计算离散对数的函数已经可以处理这样的情况了，参见[discrete_log](http://doc.sagemath.org/html/en/reference/groups/sage/groups/generic.html) 。
+但是啊，它生成素数p之后，没有进行检查啊。我们在之前说过p-1必须有大素因子，如果有小的素因子的话，那我们就可以攻击了。其攻击主要是使用到了baby step-giant step 与 Pohlig-Hellman algorithm 算法，有兴趣的可以看看，这里sage本身自带的计算离散对数的函数已经可以处理这样的情况了，参见[discrete\_log](http://doc.sagemath.org/html/en/reference/groups/sage/groups/generic.html) 。
 
 具体代码如下，需要注意的是，，这个消耗内存比较大，，不要随便拿虚拟机跑。。。还有就是这尼玛交互让我头疼啊，，，
 
@@ -219,15 +219,15 @@ print(c1_, c2_)
 
 可以看出，该算法就是一个 ElGamal 加密，给了同一个明文两组加密后的结果，其特点在于使用的随机数 r 是通过线性同余生成器生成的，则我们知道
 
-$c2 \equiv m * h^{r} \bmod p$
+$c2 \equiv m \* h^{r} \bmod p$
 
-$c2\_ \equiv m*h^{(Ar+B) \bmod q} \equiv m*h^{Ar+B}\bmod p$
+$c2\_ \equiv m_h^{(Ar+B) \bmod q} \equiv m_h^{Ar+B}\bmod p$
 
 则
 
-$c2^A*h^B/c2\_ \equiv m^{A-1}\bmod p$
+$c2^A\*h^B/c2\_ \equiv m^{A-1}\bmod p$
 
-其中，c2，c2_，A，B，h 均知道。则我们知道
+其中，c2，c2\_，A，B，h 均知道。则我们知道
 
 $m^{A-1} \equiv t \bmod p$
 
@@ -297,4 +297,4 @@ CBCTF{183a3ce8ed93df613b002252dfc741b2}
 
 ## 参考
 
-- https://www.math.auckland.ac.nz/~sgal018/crypto-book/solns.pdf，20.4.1
+* https://www.math.auckland.ac.nz/\~sgal018/crypto-book/solns.pdf，20.4.1

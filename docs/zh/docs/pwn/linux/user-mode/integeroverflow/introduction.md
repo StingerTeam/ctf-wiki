@@ -4,15 +4,14 @@
 
 在C语言中，整数的基本数据类型分为短整型(short)，整型(int)，长整型(long)，这三个数据类型还分为有符号和无符号，每种数据类型都有各自的大小范围，(因为数据类型的大小范围是编译器决定的，所以之后所述都默认是 64 位下使用 gcc-5.4)，如下所示:
 
-
-| 类型 | 字节 | 范围 |
-| :-: | :-: | :-: |
-| short int | 2byte(word) | 0\~32767(0\~0x7fff) <br> -32768\~-1(0x8000\~0xffff)  |
-| unsigned short int | 2byte(word) | 0\~65535(0\~0xffff) |
-| int | 4byte(dword) | 0\~2147483647(0\~0x7fffffff) <br> -2147483648\~-1(0x80000000\~0xffffffff) |
-| unsigned int | 4byte(dword) | 0\~4294967295(0\~0xffffffff) |
-| long int | 8byte(qword) | 正: 0\~0x7fffffffffffffff <br> 负:0x8000000000000000\~0xffffffffffffffff |
-| unsigned long int | 8byte(qword) | 0\~0xffffffffffffffff |
+|         类型         |      字节      |                                     范围                                     |
+| :----------------: | :----------: | :------------------------------------------------------------------------: |
+|      short int     |  2byte(word) |            <p>0~32767(0~0x7fff)<br>-32768~-1(0x8000~0xffff)</p>            |
+| unsigned short int |  2byte(word) |                             0\~65535(0\~0xffff)                            |
+|         int        | 4byte(dword) | <p>0~2147483647(0~0x7fffffff)<br>-2147483648~-1(0x80000000~0xffffffff)</p> |
+|    unsigned int    | 4byte(dword) |                        0\~4294967295(0\~0xffffffff)                        |
+|      long int      | 8byte(qword) |  <p>正: 0~0x7fffffffffffffff<br>负:0x8000000000000000~0xffffffffffffffff</p> |
+|  unsigned long int | 8byte(qword) |                            0\~0xffffffffffffffff                           |
 
 当程序中的数据超过其数据类型的范围，则会造成溢出，整数类型的溢出被称为整数溢出。
 
