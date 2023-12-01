@@ -3,7 +3,7 @@
 本仓库 Fork 自 [ctf-wiki/ctf-wiki](https://github.com/ctf-wiki/ctf-wiki)，经过 Stinger Team 增删改后发布。
 
 {% embed url="https://answer.stinger.team" %}
-欢迎前往 ZJUTCSA 问答平台进行提问交流
+欢迎前往 ZJUTCSA 问答平台提问和交流
 {% endembed %}
 
 欢迎来到 **CTF Wiki**。
