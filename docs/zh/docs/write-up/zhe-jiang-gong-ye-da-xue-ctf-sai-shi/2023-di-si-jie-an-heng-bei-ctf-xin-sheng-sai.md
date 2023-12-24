@@ -465,7 +465,7 @@ auto_append_file=attack.jpg
 
 ![新人爆照-9](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231224171205.png)
 
-此时访问任意php文件，发现我们上传的图片马已经被附加到页面中了
+此时访问该文件夹的任意PHP文件，发现我们上传的图片马已经被附加到页面中了
 
 ![新人爆照-10](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231224171305.png)
 
