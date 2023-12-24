@@ -465,3 +465,6 @@
   * [基本贡献方式](contribute/basic-contribute-approach.md)
   * [贡献文档要求](contribute/documentation-requirement.md)
   * [翻译](contribute/translation.md)
+* [write up](write-up/README.md)
+  * [浙江工业大学CTF赛事](write-up/zhe-jiang-gong-ye-da-xue-ctf-sai-shi/README.md)
+    * [2023第四届“安恒杯”CTF新生赛](write-up/zhe-jiang-gong-ye-da-xue-ctf-sai-shi/2023-di-si-jie-an-heng-bei-ctf-xin-sheng-sai.md)
