@@ -871,7 +871,7 @@ print(long_to_bytes(m))
 
 可得到`b'flag{d66a8e00-8ada-46eb-bded-6840b583c98f}'`
 
-## reverse
+## Reverse
 
 ### test you ida
 
@@ -881,13 +881,210 @@ print(long_to_bytes(m))
 
 ### easyBase64
 
+#### 方法一(优雅做法)
+
+首先检查一下程序是什么架构的，是32位还是64位的
+
+![easyBase64-1](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/!\[Alt%20text]\(imagesdoc-image.clipboard\_2023-12-25\_18-13.bmp\).png)
+
+然后通过64位的ida打开程序，看到如下的汇编代码
+
+![easyBase64-2](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225190702.png)
+
+通过`f5`键，将汇编代码转换成伪代码，如下图所示
+
+![easyBase64-3](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/!\[Alt%20text]\(imagesdoc-image.clipboard\_2023-12-25\_18-17.bmp\).png)
+
+```cpp
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  std::ostream *v3; // rax
+  unsigned int v4; // ebx
+  __int64 v5; // rax
+  std::ostream *v6; // rax
+  char v8[32]; // [rsp+20h] [rbp-60h] BYREF
+  char v9[48]; // [rsp+40h] [rbp-40h] BYREF
+
+  _main();
+  std::string::basic_string(v9);
+  v3 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Please input your flag: ");
+  refptr__ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(v3);
+  std::operator>><char>(refptr__ZSt3cin);
+  v4 = std::string::length(v9);
+  v5 = std::string::c_str(v9);
+  base64_encode[abi:cxx11](v8, v5, v4);
+  if ( (unsigned __int8)std::operator==<char>(v8, &target) )
+    v6 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Congratulations! You got the flag!");
+  else
+    v6 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Sorry, you are wrong!");
+  refptr__ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(v6);
+  std::string::~string(v8);
+  std::string::~string(v9);
+  return 0;
+}
+```
+
+上面的代码不方便阅读，我们进行注释和格式，如下
+
+```cpp
+int main() {
+  std::ostream *v3; // output stream
+  unsigned int v4; // length of input
+  __int64 v5; // input
+  std::ostream *v6; // output stream
+  char v8[32]; // [rsp+20h] [rbp-60h] BYREF
+  char v9[48]; // [rsp+40h] [rbp-40h] BYREF
+
+  _main();
+  std::string::basic_string(v9);
+  v3 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Please input your flag: ");
+  refptr__ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(v3);
+  std::operator>><char>(refptr__ZSt3cin); // 这里是输入
+  v4 = std::string::length(v9);
+  v5 = std::string::c_str(v9);
+  base64_encode[abi:cxx11](v8, v5, v4); // 这里是base64编码
+  if ( (unsigned __int8)std::operator==<char>(v8, &target) )
+    v6 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Congratulations! You got the flag!");
+  else
+    v6 = (std::ostream *)std::operator<<<std::char_traits<char>>(refptr__ZSt4cout, "Sorry, you are wrong!");
+
+  refptr__ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(v6);
+
+  // 下面这个函数是析构函数，用于释放内存
+  std::string::~string(v8);
+  std::string::~string(v9);
+  return 0;
+}
+```
+
+通过我练习时长两月半的`C++`编程功底，我发现这个程序的逻辑是这样的
+
+1. 输入一个字符串
+2. 进行base64编码
+3. 然后和`target`进行比较，如果相等就输出`Congratulations! You got the flag!`，否则输出`Sorry, you are wrong!`
+4. 程序结束
+
+那么我们就需要找到`target`的值，然后进行base64解码，然后就可以得到flag了
+
+于是，我们双击`target`，跳转到对应的位置来查看一下
+
+![esayBase64-4](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/!\[Alt%20text]\(imagesdoc-image.clipboard\_2023-12-25\_18-25.bmp\).png)
+
+发现什么东西都没有，感觉被骗了，但是仔细回想，我们这个程序用到了很多类似`std::string`的东西，这些东西都是`C++`的标准库，那么`target`应该就是`std::string`变量
+
+在`C++`全局变量一般是在`__static_initialization_and_destruction`，这个神奇的函数中进行初始化的
+
+![esayBase64-5](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/!\[Alt%20text]\(imagesdoc-image.clipboard\_2023-12-25\_18-40.bmp\).png)
+
+然后发现了`target`，内容是
+
+```
+AmxhA3tlAWV4LGBzNy1mBGRzOGIiAmVtBDRyNy05NTIhMjQlMTV5NzI9
+```
+
+`base64_chars`的内容是
+
+```
+ZYXWVUTSRQPONMLKJIHGFEDCBAabcdefghijklmnopqrstuvwxyz0123456789+/
+```
+
+```cpp
+__int64 __fastcall base64_encode[abi:cxx11](__int64 a1, char *a2, int a3)
+{
+  char *v4; // rax
+  int v5; // edx
+  char *v6; // rax
+  char *v7; // rax
+  int v8; // eax
+  char v10; // [rsp+21h] [rbp-5Fh]
+  char v11; // [rsp+22h] [rbp-5Eh]
+  char v12; // [rsp+23h] [rbp-5Dh]
+  char v13; // [rsp+24h] [rbp-5Ch]
+  unsigned __int8 v14; // [rsp+25h] [rbp-5Bh]
+  unsigned __int8 v15; // [rsp+26h] [rbp-5Ah]
+  unsigned __int8 v16; // [rsp+27h] [rbp-59h]
+  int j; // [rsp+28h] [rbp-58h]
+  int i; // [rsp+2Ch] [rbp-54h]
+
+  std::string::basic_string(a1);
+  i = 0;
+  j = 0;
+  while ( a3-- )
+  {
+    v4 = a2++;
+    v5 = i++;
+    *(&v14 + v5) = *v4;
+    if ( i == 3 )
+    {
+      v10 = v14 >> 2;
+      v11 = ((16 * v14) & 0x30) + (v15 >> 4);
+      v12 = ((4 * v15) & 0x3C) + (v16 >> 6);
+      v13 = v16 & 0x3F;
+      for ( i = 0; i <= 3; ++i )
+      {
+        v6 = (char *)std::string::operator[](&base64_chars, (unsigned __int8)*(&v10 + i));
+        std::string::operator+=(a1, (unsigned int)*v6);
+      }
+      i = 0;
+    }
+  }
+  if ( i )
+  {
+    for ( j = i; j <= 2; ++j )
+      *(&v14 + j) = 0;
+    v10 = v14 >> 2;
+    v11 = ((16 * v14) & 0x30) + (v15 >> 4);
+    v12 = ((4 * v15) & 0x3C) + (v16 >> 6);
+    for ( j = 0; i >= j; ++j )
+    {
+      v7 = (char *)std::string::operator[](&base64_chars, (unsigned __int8)*(&v10 + j));
+      std::string::operator+=(a1, (unsigned int)*v7);
+    }
+    while ( 1 )
+    {
+      v8 = i++;
+      if ( v8 > 2 )
+        break;
+      std::string::operator+=(a1, 61i64);
+    }
+  }
+  return a1;
+}
+```
+
+对base64的编码函数进行分析，可以发现, `base64_chars`就是码表
+
+所以综上，我们可以知道`target`的值是通过一个变码表的base64编码的， 所以最后的结果就是
+
+```python
+import base64
+
+encode_flag = "AmxhA3tlAWV4LGBzNy1mBGRzOGIiAmVtBDRyNy05NTIhMjQlMTV5NzI9"
+fake_base64_table = "ZYXWVUTSRQPONMLKJIHGFEDCBAabcdefghijklmnopqrstuvwxyz0123456789+/"
+base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+trans = str.maketrans(fake_base64_table, base64_table)
+
+true_encode_flag = encode_flag.translate(trans)
+
+decode_flag = base64.b64decode(true_encode_flag).decode()
+
+print(decode_flag)
+```
+
+然后结果是
+
+![esayBase64-6](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/!\[Alt%20text]\(imagesdoc-image.image.png\).png)
+
+#### 方法二(不优雅)
+
 用ida打开,发现疑似是一个将输入的字符串Base64编码后于另一个字符串(编码后的flag)进行比较的程序
 
 观察函数没有得到有效的信息,按`Shift`+`F12`查看字符串,发现有一个疑似自定义Base64字符集和编码后的flag的字符串
 
 尝试使用自定义字符集解码字符串,得到flag
 
-![20231225185336](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225185336.png)
+![easyBase64](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225185336.png)
 
 ### easyRe
 
@@ -964,7 +1161,7 @@ print(decrypt('kec`4~c?127`)14ad31)52)32=e?7)cba0145a31z5'))
 python ./pyinstxtractor.py nihaoya.exe
 ```
 
-![20231225135513](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225135513.png)
+![py一下](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225135513.png)
 
 针对nihaoya.pyc进行反编译,可以使用pycdc,也可以使用[在线工具](https://tool.lu/pyc/)
 
