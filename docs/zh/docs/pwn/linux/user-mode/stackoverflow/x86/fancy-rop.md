@@ -430,7 +430,7 @@ libc_hidden_def (__fortify_fail)
 
 ### 32C3 CTF readme
 
-这里，我们以 2015 年 32C3 CTF readme 为例进行介绍，该题目在 jarvisoj 上有复现。
+这里，我们以 2015 年 32C3 CTF readme 为例进行介绍，该题目在 [jarvisoj](https://www.jarvisoj.com/challenges) 上有复现。方便读者复现, binary 也可以在 [ctf-challenge ](https://github.com/ctf-wiki/ctf-challenges/tree/master/pwn/stackoverflow/stacksmashes/32c3-CTF-readme)这个仓库找到
 
 #### 确定保护
 
@@ -861,7 +861,7 @@ pwndbg> x/10i (0x0A3E+0x55dc43694000)
    0x55dc43694a52:	mov    rbp,rsp
    0x55dc43694a55:	sub    rsp,0x10
 ```
-可以发现, 此时的返回地址与 get shell 函数的地址只有低位的 16 bit 不同, 如果覆写低 16 bit 为 `0x?A3E`, 就有一定的几率 get shell
+可以发现, 此时的返回地址与 get shell 函数的地址只有低位的 8 bit 不同, 如果覆写低 8 bit 为 `0x?A3E`, 就有一定的几率 get shell
 
 最终的脚本如下:
 ```python

@@ -1,45 +1,43 @@
-# Introduction
+# 简介
 
 [![Discord](https://dcbadge.vercel.app/api/server/ekv7WDa9pq)](https://discord.gg/ekv7WDa9pq)
 
+欢迎来到 **CTF Wiki**。
 
-Welcome to **CTF Wiki**！
+**CTF**（Capture The Flag，夺旗赛）起源于 1996 年 **DEFCON** 全球黑客大会，是网络安全爱好者之间的竞技游戏。
 
-**CTF** (Capture The Flag) started from **DEFCON CTF**, a competitive game among computer security enthusiasts, originally hosted in 1996.
+**CTF** 竞赛涉及众多领域，内容繁杂。与此同时，安全技术的发展速度越来越快，**CTF** 题目的难度越来越高，初学者面对的门槛越来越高。而网上资料大都零散琐碎，初学者往往并不知道该如何系统性地学习 **CTF** 相关领域知识，常需要花费大量时间，苦不堪言。
 
-**CTF** covers a wide range of fields. Along with the evolving security technology, the difficulty of **CTF** challenges is getting harder and harder. As a result, the learning curve for beginners is getting steeper. Most online information is scattered and trivial. Beginners often don't know how to systematically learn **CTF**, which requires a lot of work and effort.
+为了使得热爱 **CTF** 的小伙伴们更好地入门 **CTF**，2016 年 10 月份，**CTF Wiki** 在 Github 有了第一次 commit。随着内容不断完善，**CTF Wiki** 受到了越来越多安全爱好者的喜爱，也渐渐有素未谋面的小伙伴们参与进来。 
 
-In order to let those people who are interested in **CTF**s start easily, in October 2016, **CTF Wiki** was established on Github. Along with gradually improved content over time, **CTF Wiki** has received lots of appreciation from security enthusiasts, many of those are guys that we think we would never meet.
+作为一个自由的站点，围绕 **CTF** 近几年赛题，**CTF Wiki** 对 **CTF** 中的各个方向的知识和技术进行介绍，以便于初学者更好地学习 **CTF** 相关的知识。
 
-As a freedom site, primarily focusing on recent CTFs, **CTF Wiki** introduces the knowledge and techniques in all aspects of **CTF** to make it easier for beginners to learn **CTF**.
+目前，**CTF Wiki** 主要包含 **CTF** 各大范畴的基础知识，并正在着力完善以下内容
 
-Now, **CTF Wiki** mainly contains the basic skills for **CTF**, but we are working hard to improve the following contents.
+- CTF 竞赛中的进阶知识
+- CTF 竞赛中的优质题目
 
-- Advanced skills used in CTF
-- Special topics appearing in CTF
+关于上述部分待完善内容，请参见 CTF Wiki 的 [Projects](https://github.com/ctf-wiki/ctf-wiki/projects)，详细列出了正在做的事项以及待做事项。
 
-For the above-mentioned parts to be improved, please refer to [Projects](https://github.com/ctf-wiki/ctf-wiki/projects) which details what are planned.
+当然，**CTF Wiki** 基于 **CTF**，却不会局限于 **CTF**。在未来，**CTF Wiki** 将会
 
-Although now **CTF Wiki** mainly focus **CTF**, it is not strictly limited to **CTF** topics. In the future, **CTF Wiki** will include
+- 介绍安全研究中的工具
+- 更多地与安全实战结合
 
-- Tools used in security research
-- Increased discussion of security in the world
+此外，鉴于以下两点
 
-In addition, given the following two points
+- 技术应该以开放的方式共享。
+- 安全攻防技术总是在不断演进，旧的技术在面对新的技术时可能失效。
 
-- Information about technology should be openly shared.
-- As new techniques are always being developed, old techniques will start to fade over time and they should be replaced with new techniques.
+因此，**CTF Wiki** 永远不会出版书籍。
 
-Therefore, **CTF Wiki** will never publish books.
+最后，**CTF Wiki** 源于社区，作为**独立的组织**，提倡**知识自由**，在未来也绝不会商业化，将始终保持**独立自由**的性质。
 
-Finally, originating from the community, as an independent organization, **CTF Wiki** advocates **freedom of knowledge**, will **never be commercialized**, and will always maintain the character of **independence and freedom**.
+## Material color palette 颜色主题
 
-## Material Color Palette Theme
+### Color Scheme 配色方案
 
-### Color Scheme
-
-The light mode and dark mode automatically changes depends on yor browser or system settings, or you could manually change it.
-
+根据浏览器与系统设置自动切换明暗主题，也可手动切换
 <div class="tx-switch">
 <button data-md-color-scheme="default"><code>Default</code></button>
 <button data-md-color-scheme="slate"><code>Slate</code></button>
@@ -54,10 +52,9 @@ The light mode and dark mode automatically changes depends on yor browser or sys
   })
 </script>
 
-### Primary colors
+### Primary colors 主色
 
-Click on the color block to change the main color of the theme.
-
+点击色块可更换主题的主色
 <div class="tx-switch">
 <button data-md-color-primary="red"><code>Red</code></button>
 <button data-md-color-primary="pink"><code>Pink</code></button>
@@ -90,10 +87,9 @@ Click on the color block to change the main color of the theme.
   })
 </script>
 
-### Accent colors
+### Accent colors 辅助色
 
-Click on the color block to change the auxiliary color of the theme.
-
+点击色块更换主题的辅助色
 <div class="tx-switch">
 <button data-md-color-accent="red"><code>Red</code></button>
 <button data-md-color-accent="pink"><code>Pink</code></button>
