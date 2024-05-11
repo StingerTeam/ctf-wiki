@@ -184,15 +184,27 @@ nav:
 - Web:
   - web/introduction.md
   - SQL 注入:
-    - web/sqli.md
+    - web/sqli/sqli.md
+    - 语句速查表:
+      - web/sqli/cheat-sheet.md
+    - sqlmap脚本:
+      - web/sqli/sqlmap-tampers.md
   - XSS 跨站脚本攻击:
     - web/xss.md
   - CSRF 跨站请求伪造:
     - web/csrf.md
   - SSRF 服务端请求伪造:
     - web/ssrf.md
-  - PHP 代码审计:
+  - PHP:
     - web/php/php.md
+    - PHP文件上传:
+      - web/php/upload.md
+    - PHP反序列化:
+      - web/php/unserialize.md
+    - PHP代码执行:
+      - web/php/code-execution.md
+    - PHP伪协议:
+      - web/php/pseudo-protocol.md
 - Assembly:
   - assembly/x86-x64/readme.md
   - assembly/mips/readme.md
@@ -555,7 +567,7 @@ markdown_extensions:
 - pymdownx.critic
 - pymdownx.details
 - pymdownx.emoji:
-    emoji_index: !!python/name:materialx.emoji.twemoji ''
+    emoji_index: !!python/name:material.extensions.emoji.twemoji' ''
     emoji_generator: !!python/name:materialx.emoji.to_svg ''
 - pymdownx.highlight
 - pymdownx.inlinehilite
