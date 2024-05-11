@@ -1,4 +1,4 @@
-# sqlmap绕过脚本
+# sqlmap 脚本
 
 ## 用法
 

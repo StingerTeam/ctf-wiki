@@ -185,10 +185,8 @@ nav:
   - web/introduction.md
   - SQL 注入:
     - web/sqli/sqli.md
-    - 语句速查表:
-      - web/sqli/cheat-sheet.md
-    - sqlmap脚本:
-      - web/sqli/sqlmap-tampers.md
+    - web/sqli/cheat-sheet.md
+    - web/sqli/sqlmap-tampers.md
   - XSS 跨站脚本攻击:
     - web/xss.md
   - CSRF 跨站请求伪造:
