@@ -4,3 +4,5 @@ site/
 .vscode/
 **/.DS_Store
 .env
+compose.yml
+rebuild.sh
