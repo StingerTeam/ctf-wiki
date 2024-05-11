@@ -197,14 +197,10 @@ nav:
     - web/ssrf.md
   - PHP:
     - web/php/php.md
-    - PHP文件上传:
-      - web/php/upload.md
-    - PHP反序列化:
-      - web/php/unserialize.md
-    - PHP代码执行:
-      - web/php/code-execution.md
-    - PHP伪协议:
-      - web/php/pseudo-protocol.md
+    - web/php/upload.md
+    - web/php/unserialize.md
+    - web/php/code-execution.md
+    - web/php/pseudo-protocol.md
 - Assembly:
   - assembly/x86-x64/readme.md
   - assembly/mips/readme.md
