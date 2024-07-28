@@ -181,6 +181,8 @@ nav:
       - crypto/attack-summary/bit-attack.md
   - 证书格式:
     - crypto/certificate/introduction.md
+  - 暑假第一周Crypto笔记:
+    - crypto/暑假第一周Crypto笔记.md
 - Web:
   - web/introduction.md
   - SQL 注入:
