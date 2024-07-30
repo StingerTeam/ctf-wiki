@@ -290,6 +290,19 @@ nav:
       - reverse/language/rust/introduction.md
     - Golang:
       - reverse/language/go/introduction.md
+  - 暑期培训:
+    - 第一天:
+      - 逆向:
+        - reverse/暑期培训/第一天/逆向.md
+      - 汇编语言简介:
+        - reverse/暑期培训/第一天/汇编语言简介.md
+    - 第二天:
+      - Base:
+        - reverse/暑期培训/第二天/Base.md
+      - RC4:
+        - reverse/暑期培训/第二天/RC4.md
+      - TEA:
+        - reverse/暑期培训/第二天/TEA.md
 - Pwn:
   - Linux Platform:
     - User Mode:
