@@ -292,17 +292,18 @@ nav:
       - reverse/language/go/introduction.md
   - 暑期培训:
     - 第一天:
-      - 逆向:
-        - reverse/暑期培训/第一天/逆向.md
-      - 汇编语言简介:
-        - reverse/暑期培训/第一天/汇编语言简介.md
+      - reverse/暑期培训/第一天/逆向.md
+      - reverse/暑期培训/第一天/汇编语言简介.md
     - 第二天:
-      - Base:
-        - reverse/暑期培训/第二天/Base.md
-      - RC4:
-        - reverse/暑期培训/第二天/RC4.md
-      - TEA:
-        - reverse/暑期培训/第二天/TEA.md
+      - reverse/暑期培训/第二天/Base.md
+      - reverse/暑期培训/第二天/RC4.md
+      - reverse/暑期培训/第二天/TEA.md
+    - 第三天:
+      - reverse/暑期培训/第三天/angr.md
+      - reverse/暑期培训/第三天/z3.md
+      - reverse/暑期培训/第三天/符号执行.md
+      - reverse/暑期培训/第三天/迷宫问题.md
+      - reverse/暑期培训/第三天/约束求解.md
 - Pwn:
   - Linux Platform:
     - User Mode:
