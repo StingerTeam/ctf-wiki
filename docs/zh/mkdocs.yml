@@ -304,6 +304,18 @@ nav:
       - reverse/暑期培训/第三天/符号执行.md
       - reverse/暑期培训/第三天/迷宫问题.md
       - reverse/暑期培训/第三天/约束求解.md
+    - 第四天:
+      - reverse/暑期培训/第四天/壳.md
+      - reverse/暑期培训/第四天/UPX.md
+      - reverse/暑期培训/第四天/ESP定律法.md
+      - reverse/暑期培训/第四天/SFX法.md
+      - reverse/暑期培训/第四天/单步跟踪法.md
+      - reverse/暑期培训/第四天/内存镜像法.md
+      - reverse/暑期培训/第四天/一部到达OEP法.md
+      - reverse/暑期培训/第四天/最后一次异常法.md
+    - 第五天:
+      - reverse/暑期培训/第五天/SMC.md
+      - reverse/暑期培训/第五天/花指令.md
 - Pwn:
   - Linux Platform:
     - User Mode:
