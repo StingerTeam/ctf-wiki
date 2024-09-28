@@ -82,6 +82,11 @@ nav:
     - misc/disk-memory/problem.md
   - Other:
     - misc/other/pyc.md
+  - Some_Misc:
+    - misc/some_misc/图片.md
+    - misc/some_misc/文本.md
+    - misc/some_misc/压缩包.md
+    - misc/some_misc/一般文件的基本思路.md
 - Crypto:
   - crypto/introduction.md
   - 基础数学知识:
